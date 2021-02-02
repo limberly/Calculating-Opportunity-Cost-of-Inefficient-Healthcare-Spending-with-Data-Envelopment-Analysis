@@ -1,0 +1,183 @@
+---
+title: "Data Documentation"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, include=FALSE}
+
+library(tidyverse)
+library(stargazer)
+alcohol_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/alcohol consumption oecd.csv'
+life_expectancy_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/life expectancy at birth oecd.csv'
+health_spending_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/health spending per capita oecd.csv'
+income_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/gross national income per capita oecd.csv'
+
+variables = c("LOCATION", "TIME", "Value")
+
+alcohol_consumption <- read_csv(alcohol_path)[variables]
+life_expectancy_at_birth <- read_csv(life_expectancy_path)[variables]
+health_spending_per_capita <- read_csv(health_spending_path)[variables]
+income_per_capita <- read_csv(income_path)[variables]
+
+data_list = list(alcohol = alcohol_consumption, life = life_expectancy_at_birth, spending = health_spending_per_capita, income = income_per_capita)
+
+# Check which variable has the least number of time series
+for (i in 1:length(data_list)) {
+  print(names(data_list)[i])
+  print(max(data_list[[i]][["TIME"]]))
+}
+
+binded_data <- bind_rows(data_list, .id = "id")
+
+binded_data <- binded_data %>% filter( LOCATION == 'AUS' |
+                        LOCATION == 'CAN' |
+                        LOCATION == 'CHE' |
+                        LOCATION == 'DEU' |
+                        LOCATION == 'DNK' |
+                        LOCATION == 'FRA' |
+                        LOCATION == 'GBR' |
+                        LOCATION == 'JPN' |
+                        LOCATION == 'NLD' |
+                        LOCATION == 'SWE' |
+                        LOCATION == 'USA',
+                        TIME <= 2017)
+
+binded_data <- pivot_wider(data = binded_data, names_from = id, values_from = Value)
+summary_statistics <- binded_data[, 3:6] %>% summarize_each(funs(min)) %>% pivot_longer(data = ., cols = alcohol:income, names_to = "Variables", values_to = "Min")
+summary_statistics <- cbind(summary_statistics, binded_data[, 3:6] %>% summarize_each(funs(mean)) %>% pivot_longer(data = ., cols = alcohol:income, values_to = "Mean") %>% select(Mean))
+summary_statistics <- cbind(summary_statistics, binded_data[, 3:6] %>% summarize_each(funs(max)) %>% pivot_longer(data = ., cols = alcohol:income, values_to = "Max") %>% select(Max))
+summary_statistics <- cbind(summary_statistics, binded_data[, 3:6] %>% summarize_each(funs(sd)) %>% pivot_longer(data = ., cols = alcohol:income, values_to = "Standard Deviation") %>% select("Standard Deviation"))
+summary_statistics <- cbind(summary_statistics, binded_data[, 3:6] %>% summarize_each(funs(n())) %>% pivot_longer(data = ., cols = alcohol:income, values_to = "N") %>% select(N))
+# library(openxlsx)
+# write.xlsx(summary_statistics, "C:/Users/limhy/Desktop/research/Capstone - Copy/outputs/summary_statistics.xlsx")
+summary_statistics
+
+```
+
+```{r}
+library(rDEA)
+binded_data$alcohol <- 1 / binded_data$alcohol
+byyear <- split(binded_data, binded_data$TIME)
+
+y_00 <- byyear$'2000'
+y_01 <- byyear$'2001'
+y_02 <- byyear$'2002'
+y_03 <- byyear$'2003'
+y_04 <- byyear$'2004'
+y_05 <- byyear$'2005'
+y_06 <- byyear$'2006'
+y_07 <- byyear$'2007'
+y_08 <- byyear$'2008'
+y_09 <- byyear$'2009'
+y_10 <- byyear$'2010'
+y_11 <- byyear$'2011'
+y_12 <- byyear$'2012'
+y_13 <- byyear$'2013'
+y_14 <- byyear$'2014'
+y_15 <- byyear$'2015'
+y_16 <- byyear$'2016'
+y_17 <- byyear$'2017'
+
+y_00$dea <- dea.robust(y_00[,c(3, 5, 6)], y_00$life, model = "input", RTS = "variable")$theta_hat_hat
+y_01$dea <- dea.robust(y_01[,c(3, 5, 6)], y_01$life, model = "input", RTS = "variable")$theta_hat_hat
+y_02$dea <- dea.robust(y_02[,c(3, 5, 6)], y_02$life, model = "input", RTS = "variable")$theta_hat_hat
+y_03$dea <- dea.robust(y_03[,c(3, 5, 6)], y_03$life, model = "input", RTS = "variable")$theta_hat_hat
+y_04$dea <- dea.robust(y_04[,c(3, 5, 6)], y_04$life, model = "input", RTS = "variable")$theta_hat_hat
+y_05$dea <- dea.robust(y_05[,c(3, 5, 6)], y_05$life, model = "input", RTS = "variable")$theta_hat_hat
+y_06$dea <- dea.robust(y_06[,c(3, 5, 6)], y_06$life, model = "input", RTS = "variable")$theta_hat_hat
+y_07$dea <- dea.robust(y_07[,c(3, 5, 6)], y_07$life, model = "input", RTS = "variable")$theta_hat_hat
+y_08$dea <- dea.robust(y_08[,c(3, 5, 6)], y_08$life, model = "input", RTS = "variable")$theta_hat_hat
+y_09$dea <- dea.robust(y_09[,c(3, 5, 6)], y_09$life, model = "input", RTS = "variable")$theta_hat_hat
+y_10$dea <- dea.robust(y_10[,c(3, 5, 6)], y_10$life, model = "input", RTS = "variable")$theta_hat_hat
+y_11$dea <- dea.robust(y_11[,c(3, 5, 6)], y_11$life, model = "input", RTS = "variable")$theta_hat_hat
+y_12$dea <- dea.robust(y_12[,c(3, 5, 6)], y_12$life, model = "input", RTS = "variable")$theta_hat_hat
+y_13$dea <- dea.robust(y_13[,c(3, 5, 6)], y_13$life, model = "input", RTS = "variable")$theta_hat_hat
+y_14$dea <- dea.robust(y_14[,c(3, 5, 6)], y_14$life, model = "input", RTS = "variable")$theta_hat_hat
+y_15$dea <- dea.robust(y_15[,c(3, 5, 6)], y_15$life, model = "input", RTS = "variable")$theta_hat_hat
+y_16$dea <- dea.robust(y_16[,c(3, 5, 6)], y_15$life, model = "input", RTS = "variable")$theta_hat_hat
+y_17$dea <- dea.robust(y_17[,c(3, 5, 6)], y_15$life, model = "input", RTS = "variable")$theta_hat_hat
+binded_data$dea <- dea.robust(binded_data[,c(3, 5, 6)], binded_data$life, model = "input", RTS = "variable")$theta_hat_hat
+
+
+USResult <- rbind(y_00[11,], y_01[11,], y_02[11,], y_03[11,], y_04[11,], y_05[11,], y_06[11,], y_07[11,], y_08[11,], y_09[11,], y_10[11,], y_11[11,], y_12[11,], y_13[11,], y_14[11,], y_15[11,], y_16[11,], y_17[11,])
+
+gdpcapita <- read.csv(file = "C:/Users/limhy/Desktop/research/Capstone - Copy/data/GDP per capita fred.csv")[2:19,]
+us_health_spending <- health_spending_per_capita %>% filter(LOCATION == "USA" & TIME <= 2017) %>% select(Value)
+USResult$Healthspending <- us_health_spending$Value
+USResult$GDPCapita <- as.numeric(gdpcapita$A939RX0Q048SBEA)
+USResult$Inefficiency <- (1 - USResult$dea) * USResult$Healthspending
+USResult$Percent_GDP <- (USResult$Inefficiency / USResult$GDPCapita) * 100
+
+USResult[,c(2, 7:11)]
+```
+
+```{r}
+deayearlyresult <- y_00[,1:2]
+
+deayearlyresult$'2000' <- y_00$dea
+deayearlyresult$'2001' <- y_01$dea
+deayearlyresult$'2002' <- y_02$dea
+deayearlyresult$'2003' <- y_03$dea
+deayearlyresult$'2004' <- y_04$dea
+deayearlyresult$'2005' <- y_05$dea
+deayearlyresult$'2006' <- y_06$dea
+deayearlyresult$'2007' <- y_07$dea
+deayearlyresult$'2008' <- y_08$dea
+deayearlyresult$'2009' <- y_09$dea
+deayearlyresult$'2010' <- y_10$dea
+deayearlyresult$'2011' <- y_11$dea
+deayearlyresult$'2012' <- y_12$dea
+deayearlyresult$'2013' <- y_13$dea
+deayearlyresult$'2014' <- y_14$dea
+deayearlyresult$'2015' <- y_15$dea
+
+```
+
+```{r}
+dea_consolidated <- rbind(y_00, y_01, y_02, y_03, y_04, y_05, y_06, y_07, y_08, y_09, y_10, y_11, y_12, y_13, y_14, y_15, y_16, y_17)
+time_series_output <- dea_consolidated[,c(1,2,7)]
+time_series_output <- pivot_wider(time_series_output, names_from = TIME, values_from = dea)
+# write.xlsx(time_series_output, "C:/Users/limhy/Desktop/research/Capstone - Copy/outputs/time_series_dea.xlsx")
+
+library(RColorBrewer)
+plot_consolidated <- ggplot(dea_consolidated, aes(x=TIME, y=dea, color = LOCATION)) + 
+  geom_line(alpha=1) +
+  scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
+  labs(title = "Graph 1, DEA Input Model, Time-series", x = "Year", y = "DEA Efficiency", color = "Country")
+
+plot_consolidated +
+  geom_text(data = subset(dea_consolidated, TIME == 2017),
+            aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
+```{r}
+efficiency_increase <- subset(dea_consolidated, TIME >= 2006 & TIME <= 2010)
+
+for (i in 2006:2010) {
+  if (i != 2008) {
+    efficiency_increase[efficiency_increase$TIME == i, ][, 3:6] <- efficiency_increase[efficiency_increase$TIME == i, ][, 3:6] -
+      efficiency_increase[efficiency_increase$TIME == 2008, ][, 3:6]
+  }
+}
+
+```
+
+```{r}
+library(RColorBrewer)
+not_time_series_output <- binded_data[,c(1,2,7)]
+not_time_series_output <- pivot_wider(not_time_series_output, names_from = TIME, values_from = dea)
+# write.xlsx(not_time_series_output, "C:/Users/limhy/Desktop/research/Capstone - Copy/outputs/not_time_series_dea.xlsx")
+plot_no_time_concerned <- ggplot(binded_data, aes(x=TIME, y=dea, color = LOCATION)) + 
+  geom_line(alpha=1) +
+  scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
+  labs(title = "Graph 2, DEA Input Model, Not Time-series", x = "Year", y = "DEA Efficiency", color = "Country")
+
+plot_no_time_concerned + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
