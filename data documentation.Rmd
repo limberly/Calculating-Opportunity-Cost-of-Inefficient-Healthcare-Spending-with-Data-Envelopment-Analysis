@@ -7,16 +7,18 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+pwd
+```
 
 
 ```{r, include=FALSE}
 
 library(tidyverse)
-library(stargazer)
-alcohol_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/alcohol consumption oecd.csv'
-life_expectancy_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/life expectancy at birth oecd.csv'
-health_spending_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/health spending per capita oecd.csv'
-income_path <- 'C:/Users/limhy/Desktop/research/Capstone - Copy/data/gross national income per capita oecd.csv'
+alcohol_path <- './data/alcohol consumption oecd.csv'
+life_expectancy_path <- './data/life expectancy at birth oecd.csv'
+health_spending_path <- './data/health spending per capita oecd.csv'
+income_path <- './data/gross national income per capita oecd.csv'
 
 variables = c("LOCATION", "TIME", "Value")
 
@@ -107,7 +109,7 @@ binded_data$dea <- dea.robust(binded_data[,c(3, 5, 6)], binded_data$life, model 
 
 USResult <- rbind(y_00[11,], y_01[11,], y_02[11,], y_03[11,], y_04[11,], y_05[11,], y_06[11,], y_07[11,], y_08[11,], y_09[11,], y_10[11,], y_11[11,], y_12[11,], y_13[11,], y_14[11,], y_15[11,], y_16[11,], y_17[11,])
 
-gdpcapita <- read.csv(file = "C:/Users/limhy/Desktop/research/Capstone - Copy/data/GDP per capita fred.csv")[2:19,]
+gdpcapita <- read.csv(file = "./data/GDP per capita fred.csv")[2:19,]
 us_health_spending <- health_spending_per_capita %>% filter(LOCATION == "USA" & TIME <= 2017) %>% select(Value)
 USResult$Healthspending <- us_health_spending$Value
 USResult$GDPCapita <- as.numeric(gdpcapita$A939RX0Q048SBEA)
@@ -149,9 +151,9 @@ library(RColorBrewer)
 plot_consolidated <- ggplot(dea_consolidated, aes(x=TIME, y=dea, color = LOCATION)) + 
   geom_line(alpha=1) +
   scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
-  labs(title = "Graph 1, DEA Input Model, Time-series", x = "Year", y = "DEA Efficiency", color = "Country")
+  labs(title = "Figure 1, Input Oriented DEA, Yearly Model", x = "Year", y = "DEA Efficiency", color = "Country")
 
-plot_consolidated +
+f1 <- plot_consolidated +
   geom_text(data = subset(dea_consolidated, TIME == 2017),
             aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
 ```
@@ -176,8 +178,53 @@ not_time_series_output <- pivot_wider(not_time_series_output, names_from = TIME,
 plot_no_time_concerned <- ggplot(binded_data, aes(x=TIME, y=dea, color = LOCATION)) + 
   geom_line(alpha=1) +
   scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
-  labs(title = "Graph 2, DEA Input Model, Not Time-series", x = "Year", y = "DEA Efficiency", color = "Country")
+  labs(title = "Figure 2, Input Oriented DEA, All-year Model", x = "Year", y = "DEA Efficiency", color = "Country")
 
-plot_no_time_concerned + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+f2 <- plot_no_time_concerned + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
+```{r}
+alcohol_yearly <- binded_data[,c(1,2,7)]
+alcohol_yealry <- ggplot(binded_data, aes(x=TIME, y=(1/alcohol), color = LOCATION)) + 
+  geom_line(alpha=1) +
+  scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
+  labs(title = "Figure 3, Alcohol consumption trend", x = "Year", y = "Alcohol consumption", color = "Country")
+
+f3 <- alcohol_yealry + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
+```{r}
+life_yealry <- ggplot(binded_data, aes(x=TIME, y=life, color = LOCATION)) + 
+  geom_line(alpha=1) +
+  scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
+  labs(title = "Figure 4, Life expectancy trend", x = "Year", y = "Life expectancy", color = "Country")
+
+f4 <- life_yealry + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
+```{r}
+spending_yealry <- ggplot(binded_data, aes(x=TIME, y=spending, color = LOCATION)) + 
+  geom_line(alpha=1) +
+  scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
+  labs(title = "Figure 5, Health spending trend", x = "Year", y = "Healthcare spending", color = "Country")
+
+f5 <- spending_yealry + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
+```{r}
+income_yealry <- ggplot(binded_data, aes(x=TIME, y=income, color = LOCATION)) + 
+  geom_line(alpha=1) +
+  scale_colour_manual(values = c("AUS" = "#FF0000", "CAN" ="#999900", "CHE"="#994C00", "DEU"="#66CC00", "DNK"="#009999", "FRA"="#004C99", "GBR"="#B266FF", "JPN"="#FF00FF", "NLD"="#CC0066", "SWE"="#006666", "USA"="#000000")) + 
+  labs(title = "Figure 6, Per capita income trend", x = "Year", y = "Per capita income", color = "Country")
+
+f6 <- income_yealry + geom_text(data = subset(binded_data, TIME == 2017),aes(label= LOCATION), check_overlap = TRUE, show.legend = FALSE, nudge_x = 1)
+```
+
+```{r}
+library(gridExtra)
+library(cowplot)
+
+plot_grid(f3, f4, f5, f6, ncol = 2, nrow = 2)
+
 ```
 
